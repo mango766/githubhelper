@@ -15,7 +15,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave })
     selectedModel: '',
     githubToken: '',
   });
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -24,19 +23,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave })
     };
     loadSettings();
   }, []);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      // 切换 AI 源时清空已选模型，让用户重新选择
-      const toSave = { ...settings };
-      await storageService.saveSettings(toSave);
-      onSave(toSave);
-      // 不在这里调用 onClose，由父组件处理
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleProviderChange = (provider: AIProvider) => {
     setSettings({ 
@@ -162,15 +148,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave })
       </div>
 
       <div className="gh-settings-footer">
-        <button className="gh-settings-btn gh-settings-btn-cancel" onClick={onClose}>
-          取消
-        </button>
         <button
+          type="button"
           className="gh-settings-btn gh-settings-btn-save"
-          onClick={handleSave}
-          disabled={saving || (settings.aiProvider === 'gemini' && !settings.geminiApiKey)}
+          onClick={() => {
+            const toSave = { ...settings };
+            storageService.saveSettings(toSave);
+            onSave(toSave);
+            onClose();
+          }}
         >
-          {saving ? '保存中...' : '保存'}
+          保存
+        </button>
+        <button 
+          type="button"
+          className="gh-settings-btn gh-settings-btn-cancel" 
+          onClick={onClose}
+        >
+          取消
         </button>
       </div>
     </div>

@@ -54,5 +54,7 @@ export interface Settings {
   ollamaUrl: string;
   geminiApiKey: string;
   selectedModel: string;
+  ollamaSelectedModel?: string;  // 记住 Ollama 上次选择的模型
+  geminiSelectedModel?: string;  // 记住 Gemini 上次选择的模型
   githubToken?: string;
 }

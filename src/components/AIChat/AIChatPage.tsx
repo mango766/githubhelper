@@ -12,6 +12,7 @@ import { ChatInput } from './ChatInput';
 import { ModelSelector } from './ModelSelector';
 import { ChatHistory } from './ChatHistory';
 import { SettingsPanel } from './SettingsPanel';
+import { AIProviderSelector } from './AIProviderSelector';
 import { Toast, ToastType } from './Toast';
 
 interface AIChatPageProps {
@@ -32,6 +33,7 @@ export const AIChatPage: React.FC<AIChatPageProps> = ({ urlInfo }) => {
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+  const [geminiConfigured, setGeminiConfigured] = useState(false);
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,14 +56,17 @@ export const AIChatPage: React.FC<AIChatPageProps> = ({ urlInfo }) => {
       }
       if (settings.geminiApiKey) {
         geminiService.setApiKey(settings.geminiApiKey);
+        setGeminiConfigured(true);
       }
       if (settings.githubToken) {
         githubService.setToken(settings.githubToken);
       }
       
-      // 设置已选模型（如果有）
-      if (settings.selectedModel) {
-        setSelectedModel(settings.selectedModel);
+      // 设置已选模型（根据当前 provider 选择对应的记忆模型）
+      const modelKey = provider === 'gemini' ? 'geminiSelectedModel' : 'ollamaSelectedModel';
+      const rememberedModel = settings[modelKey] || settings.selectedModel;
+      if (rememberedModel) {
+        setSelectedModel(rememberedModel);
       }
       
       // 标记设置已加载完成
@@ -293,6 +298,33 @@ export const AIChatPage: React.FC<AIChatPageProps> = ({ urlInfo }) => {
     setShowHistory(false);
   };
 
+  // 切换 AI 源
+  const handleProviderChange = async (newProvider: AIProvider) => {
+    if (newProvider === aiProvider) return;
+
+    // 保存当前 provider 的模型选择
+    const currentModelKey = aiProvider === 'gemini' ? 'geminiSelectedModel' : 'ollamaSelectedModel';
+    await storageService.saveSettings({ 
+      [currentModelKey]: selectedModel,
+      aiProvider: newProvider 
+    });
+
+    // 切换 provider
+    setAiProvider(newProvider);
+    aiService.setProvider(newProvider);
+
+    // 加载新 provider 的记忆模型
+    const settings = await storageService.getSettings();
+    const newModelKey = newProvider === 'gemini' ? 'geminiSelectedModel' : 'ollamaSelectedModel';
+    const rememberedModel = settings[newModelKey] || '';
+    setSelectedModel(rememberedModel);
+
+    setToast({ 
+      message: `已切换到 ${newProvider === 'gemini' ? 'Gemini' : 'Ollama'}`, 
+      type: 'success' 
+    });
+  };
+
   if (!urlInfo) {
     return (
       <div className="gh-ai-empty">
@@ -305,9 +337,11 @@ export const AIChatPage: React.FC<AIChatPageProps> = ({ urlInfo }) => {
     <div className="gh-ai-chat-page">
       {/* Toolbar */}
       <div className="gh-ai-toolbar">
-        <span className="gh-ai-provider-badge" title={aiProvider === 'gemini' ? 'Google Gemini' : 'Ollama'}>
-          {aiProvider === 'gemini' ? '✨' : '🦙'}
-        </span>
+        <AIProviderSelector
+          value={aiProvider}
+          onChange={handleProviderChange}
+          geminiConfigured={geminiConfigured}
+        />
         {settingsLoaded && (
           <ModelSelector value={selectedModel} onChange={setSelectedModel} provider={aiProvider} />
         )}
@@ -333,7 +367,7 @@ export const AIChatPage: React.FC<AIChatPageProps> = ({ urlInfo }) => {
           新建
         </button>
         <button
-          className="gh-ai-toolbar-btn"
+          className="gh-ai-toolbar-btn gh-ai-toolbar-btn-icon"
           onClick={() => setShowSettings(true)}
           title="设置"
         >
@@ -376,6 +410,9 @@ export const AIChatPage: React.FC<AIChatPageProps> = ({ urlInfo }) => {
             }
             if (newSettings.geminiApiKey) {
               geminiService.setApiKey(newSettings.geminiApiKey);
+              setGeminiConfigured(true);
+            } else {
+              setGeminiConfigured(false);
             }
             if (newSettings.githubToken) {
               githubService.setToken(newSettings.githubToken);
@@ -387,9 +424,9 @@ export const AIChatPage: React.FC<AIChatPageProps> = ({ urlInfo }) => {
             }
             
             // 如果 GitHub Token 变化，清除缓存
-            cacheService.clearRepoContext(urlInfo?.owner || '', urlInfo?.repo || '');
+            cacheService.clearCache(urlInfo?.owner || '', urlInfo?.repo || '');
             
-            // 关闭设置面板并显示成功提示
+            // 关闭设置页并显示成功提示
             setShowSettings(false);
             setToast({ message: '设置已保存', type: 'success' });
           }}
