@@ -40,7 +40,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, disabled }) => {
         <input
           type="text"
           className="gh-search-input"
-          placeholder="Search repositories... (e.g., react, machine learning)"
+          placeholder="Search repositories... (e.g., agents, skills)"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}

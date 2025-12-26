@@ -259,16 +259,6 @@
   overscroll-behavior: contain; /* 阻止滚动穿透到宿主页面 */
 }
 
-.gh-repo-card {
-  padding: 16px;
-  border-bottom: 1px solid var(--gh-color-border-muted);
-  transition: background 0.15s ease;
-}
-
-.gh-repo-card:hover {
-  background: var(--gh-color-canvas-subtle);
-}
-
 .gh-repo-header {
   display: flex;
   align-items: flex-start;
@@ -1413,4 +1403,114 @@
 
 .gh-toast-message {
   white-space: nowrap;
+}
+
+/* ==================== Repo Selection ==================== */
+.gh-repo-card {
+  padding: 16px;
+  border-bottom: 1px solid var(--gh-color-border-muted);
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gh-repo-card:hover {
+  background: var(--gh-color-canvas-subtle);
+}
+
+.gh-repo-card-selected {
+  background: var(--gh-color-accent-subtle);
+  border-left: 3px solid var(--gh-color-accent-emphasis);
+}
+
+.gh-repo-card-selected:hover {
+  background: var(--gh-color-accent-subtle);
+}
+
+.gh-repo-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.gh-repo-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.gh-repo-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--gh-color-accent-emphasis);
+}
+
+/* Selection Bar */
+.gh-selection-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--gh-color-canvas-subtle);
+  border-top: 1px solid var(--gh-color-border-default);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.gh-selection-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gh-color-fg-default);
+}
+
+.gh-selection-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.gh-selection-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--gh-radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gh-selection-btn-clear {
+  color: var(--gh-color-fg-muted);
+  background: var(--gh-color-canvas-default);
+  border: 1px solid var(--gh-color-border-default);
+}
+
+.gh-selection-btn-clear:hover {
+  color: var(--gh-color-fg-default);
+  background: var(--gh-color-btn-hover-bg);
+}
+
+.gh-selection-btn-copy {
+  color: #ffffff;
+  background: var(--gh-color-accent-emphasis);
+  border: 1px solid var(--gh-color-accent-emphasis);
+}
+
+.gh-selection-btn-copy:hover:not(:disabled) {
+  background: var(--gh-color-accent-fg);
+}
+
+.gh-selection-btn-copy:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gh-selection-btn-copy.copied {
+  background: var(--gh-color-success-fg);
+  border-color: var(--gh-color-success-fg);
 }

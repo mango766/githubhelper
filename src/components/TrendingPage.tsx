@@ -3,6 +3,8 @@ import { useGitHubSearch, TimeRange } from '../hooks/useGitHubSearch';
 import { SearchBar } from './SearchBar';
 import { TimeFilter } from './TimeFilter';
 import { RepoCard } from './RepoCard';
+import { SelectionBar } from './SelectionBar';
+import { Toast } from './AIChat/Toast';
 import { AlertIcon, InboxIcon } from './Icons';
 
 // 格式化剩余时间
@@ -29,6 +31,8 @@ function formatResetTime(resetTimestamp: number): string {
 export const TrendingPage: React.FC = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
   const [keyword, setKeyword] = useState('');
+  const [selectedRepos, setSelectedRepos] = useState<Set<number>>(new Set());
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const {
     repositories,
@@ -45,6 +49,7 @@ export const TrendingPage: React.FC = () => {
   const handleSearch = useCallback(
     (newKeyword: string) => {
       setKeyword(newKeyword);
+      setSelectedRepos(new Set()); // 搜索时清空选择
       search(newKeyword, timeRange);
     },
     [search, timeRange]
@@ -53,10 +58,42 @@ export const TrendingPage: React.FC = () => {
   const handleTimeRangeChange = useCallback(
     (newTimeRange: TimeRange) => {
       setTimeRange(newTimeRange);
+      setSelectedRepos(new Set()); // 切换时间范围时清空选择
       search(keyword, newTimeRange);
     },
     [search, keyword]
   );
+
+  const handleSelectRepo = useCallback((id: number, selected: boolean) => {
+    setSelectedRepos(prev => {
+      const next = new Set(prev);
+      if (selected) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedRepos(new Set());
+  }, []);
+
+  const handleCopyCloneCommands = useCallback(async () => {
+    const selectedRepoList = repositories.filter(repo => selectedRepos.has(repo.id));
+    const commands = selectedRepoList
+      .map(repo => `git clone https://github.com/${repo.full_name}.git`)
+      .join('\n');
+    
+    try {
+      await navigator.clipboard.writeText(commands);
+      setToast({ message: `已复制 ${selectedRepoList.length} 个仓库的克隆命令`, type: 'success' });
+    } catch (err) {
+      setToast({ message: '复制失败，请重试', type: 'error' });
+      throw err;
+    }
+  }, [repositories, selectedRepos]);
 
   const showRateLimitWarning = rateLimitInfo && rateLimitInfo.remaining < 10;
   
@@ -69,6 +106,15 @@ export const TrendingPage: React.FC = () => {
 
   return (
     <>
+      {/* Toast */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Rate Limit Warning */}
       {showRateLimitWarning && (
         <div className="gh-rate-limit">
@@ -86,7 +132,7 @@ export const TrendingPage: React.FC = () => {
       <TimeFilter value={timeRange} onChange={handleTimeRangeChange} disabled={loading} />
 
       {/* Repository List */}
-      <div className="gh-repo-list">
+      <div className="gh-repo-list" style={{ paddingBottom: selectedRepos.size > 0 ? '70px' : '8px' }}>
         {/* Error State */}
         {error && (
           <div className="gh-error">
@@ -118,7 +164,13 @@ export const TrendingPage: React.FC = () => {
 
         {/* Repository Cards */}
         {repositories.map((repo) => (
-          <RepoCard key={repo.id} repo={repo} />
+          <RepoCard
+            key={repo.id}
+            repo={repo}
+            showCheckbox
+            selected={selectedRepos.has(repo.id)}
+            onSelect={handleSelectRepo}
+          />
         ))}
 
         {/* Load More */}
@@ -137,6 +189,13 @@ export const TrendingPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Selection Bar */}
+      <SelectionBar
+        selectedCount={selectedRepos.size}
+        onCopy={handleCopyCloneCommands}
+        onClear={handleClearSelection}
+      />
     </>
   );
 };
