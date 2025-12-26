@@ -1,6 +1,21 @@
-# GitHub Helper
+<div align="center">
 
-一款功能丰富的 GitHub 浏览器扩展，帮助你发现热门仓库并与 AI 助手进行代码相关对话。
+# 🚀 GitHub Helper
+
+**发现热门仓库 & AI 代码助手**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Release](https://img.shields.io/github/v/release/mango766/githubhelper)](https://github.com/mango766/githubhelper/releases/latest)
+[![Chrome](https://img.shields.io/badge/Chrome-Compatible-green.svg)](https://www.google.com/chrome/)
+[![Firefox](https://img.shields.io/badge/Firefox-Compatible-orange.svg)](https://www.mozilla.org/firefox/)
+
+⭐ 喜欢这个项目？给个 Star 吧！
+
+[快速开始](#安装) · [功能特性](#功能特性) · [使用方法](#使用方法)
+
+</div>
+
+---
 
 ## 功能特性
 
