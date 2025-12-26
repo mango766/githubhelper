@@ -2,7 +2,7 @@
 
 # 🚀 GitHub Helper
 
-**发现热门仓库 & AI 代码助手**
+**【浏览器插件】- 发现热门仓库 & AI 代码助手**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Release](https://img.shields.io/github/v/release/mango766/githubhelper)](https://github.com/mango766/githubhelper/releases/latest)
